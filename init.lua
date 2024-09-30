@@ -107,6 +107,9 @@ vim.opt.relativenumber = true
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 
+vim.opt.pumheight = 10 --limit completion height
+vim.opt.pumwidth = 45
+
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
 
@@ -743,11 +746,13 @@ require('lazy').setup({
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
+      'onsails/lspkind.nvim',
     },
     config = function()
       -- See `:help cmp`
       local cmp = require 'cmp'
       local luasnip = require 'luasnip'
+      local lspkind = require 'lspkind'
       luasnip.config.setup {}
 
       cmp.setup {
@@ -757,7 +762,36 @@ require('lazy').setup({
           end,
         },
         completion = { completeopt = 'menu,menuone,noinsert' },
+        view = {
+          entries = { name = 'custom', selection_order = 'near_cursor' },
+        },
+        window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        },
+        formatting = {
+          fields = { 'abbr', 'kind' },
+          expandable_indicator = true,
+          format = lspkind.cmp_format {
+            mode = 'text_symbol',
+            maxwidth = 25,
+            ellipsis_char = '...',
+            show_labelDetails = true,
 
+            before = function(entry, vim_item)
+              if vim.tbl_contains({ 'path' }, entry.source.name) then
+                local icon, hl_group = require('nvim-web-devicons').get_icon(entry:get_completion_item().label)
+                if icon then
+                  vim_item.kind = icon
+                  vim_item.kind_hl_group = hl_group
+                  return vim_item
+                end
+              end
+              vim_item.menu = ''
+              return vim_item
+            end,
+          },
+        },
         -- For an understanding of why these mappings were
         -- chosen, you will need to read `:help ins-completion`
         --
@@ -832,7 +866,7 @@ require('lazy').setup({
     'ellisonleao/gruvbox.nvim',
     opts = {
       overrides = {
-        SignColumn = {bg = '#282828'},
+        SignColumn = { bg = '#282828' },
       },
     },
     priority = 1000, -- Make sure to load this before all the other start plugins.
