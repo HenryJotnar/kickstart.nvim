@@ -923,6 +923,23 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+  {
+    'stevearc/oil.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('oil').setup {
+        columns = { 'icon' },
+        view_options = {
+          show_hidden = true,
+        },
+        float = {
+          max_width = 80,
+          max_height = 30,
+        },
+      }
+      vim.keymap.set('n', '<leader>-', require('oil').toggle_float)
+    end,
+  },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
